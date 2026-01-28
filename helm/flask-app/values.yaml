@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/marom-eks-flask-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 5000
+
+resources: {}
