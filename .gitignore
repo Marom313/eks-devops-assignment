@@ -1,4 +1,13 @@
+# Terraform
 .terraform/
 *.tfstate
-*.tfstate.backup
-*.lock.hcl
+*.tfstate.*
+terraform.tfvars
+crash.log
+
+# Terraform plan
+*.tfplan
+
+# OS
+.DS_Store
+Thumbs.db
