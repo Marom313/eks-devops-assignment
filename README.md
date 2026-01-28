@@ -222,3 +222,170 @@ At the end of Phase 2:
 • Kubernetes (EKS) can now deploy this image  
 
 This completes the Docker & Registry layer of the DevOps pipeline and prepares the system for Kubernetes deployment in Phase 3.
+
+
+# Phase 3 – Deploying the Application to EKS Using Helm
+
+## Overview
+
+In this phase we deploy the containerized Flask application into the EKS cluster using **Helm**.
+
+Helm is used as a Kubernetes package manager that allows us to define, version, and manage application deployments in a clean and repeatable way.
+
+This phase connects the infrastructure layer (EKS) with the application artifact (Docker image in ECR).
+
+---
+
+## Helm Chart Structure
+
+The Helm chart is located under the `helm/` directory:
+
+helm/
+└── flask-app/
+    ├── Chart.yaml
+    ├── values.yaml
+    └── templates/
+        ├── deployment.yaml
+        └── service.yaml
+
+
+Each file has a specific responsibility:
+
+• `Chart.yaml` – Chart metadata  
+• `values.yaml` – Configurable values (image, replicas, ports)  
+• `deployment.yaml` – Kubernetes Deployment definition  
+• `service.yaml` – Kubernetes Service definition  
+
+---
+
+## Kubernetes Deployment
+
+The Deployment resource defines how the Flask application runs inside the cluster:
+
+• Uses the Docker image stored in AWS ECR  
+• Exposes port 5000 inside the container  
+• Controls the number of running replicas  
+
+The image repository and tag are injected using Helm values, allowing easy upgrades without changing manifests.
+
+---
+
+## Exposing the Application
+
+The Service is defined as type **LoadBalancer**.
+
+This instructs AWS to:
+
+• Provision an external load balancer  
+• Expose the application publicly  
+• Route internet traffic to the Flask pods  
+
+After deployment, the application becomes accessible from the internet via a public endpoint.
+
+---
+
+## Deploying with Helm
+
+The application can be deployed using the following command:
+
+helm upgrade --install flask-app ./helm/flask-app \
+  --set image.repository=<ECR_REPOSITORY_URL> \
+  --set image.tag=latest
+
+
+Helm will:
+
+• Create or update the Deployment  
+• Create the Service  
+• Roll out changes safely  
+
+---
+
+## Result
+
+At the end of Phase 3:
+
+• The Flask application is running on EKS  
+• The application is exposed to the internet  
+• Deployments are managed using Helm  
+
+This completes the Kubernetes deployment layer of the system.
+
+---
+
+# Phase 4 – Automating Deployment with GitHub Actions
+
+## Overview
+
+In this phase we automate the full deployment process using **GitHub Actions**.
+
+Every push to the `main` branch triggers a CI/CD pipeline that:
+
+• Builds the Docker image  
+• Pushes the image to AWS ECR  
+• Deploys or updates the application in EKS using Helm  
+
+This removes all manual steps and enables continuous delivery.
+
+---
+
+## GitHub Actions Workflow
+
+The workflow file is located at:
+
+.github/workflows/deploy.yaml
+
+
+It defines a single pipeline triggered on pushes to the `main` branch.
+
+---
+
+## Pipeline Steps
+
+The pipeline performs the following steps:
+
+1. Checkout the repository code  
+2. Configure AWS credentials using GitHub Secrets  
+3. Authenticate Docker with AWS ECR  
+4. Build the Flask Docker image  
+5. Push the image to AWS ECR  
+6. Deploy or update the application using Helm  
+
+All sensitive values are stored securely using GitHub Secrets.
+
+---
+
+## Required GitHub Secrets
+
+The following secrets must be configured in the GitHub repository:
+
+• `AWS_ACCESS_KEY_ID`  
+• `AWS_SECRET_ACCESS_KEY`  
+• `ECR_REPOSITORY`  
+
+These secrets allow the pipeline to authenticate with AWS and push images securely.
+
+---
+
+## Result
+
+At the end of Phase 4:
+
+• Docker images are built automatically  
+• Images are pushed to AWS ECR  
+• The application is deployed to EKS automatically  
+• The system follows a full CI/CD workflow  
+
+---
+
+# Final Summary
+
+This project demonstrates a complete DevOps pipeline:
+
+• Infrastructure provisioning with Terraform  
+• Application containerization with Docker  
+• Kubernetes deployment using Helm  
+• Continuous deployment using GitHub Actions  
+
+All components follow infrastructure-as-code and automation best practices, creating a clean, reproducible, and production-style system.
+
